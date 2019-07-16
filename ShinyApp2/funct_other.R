@@ -40,6 +40,80 @@ function.nbRowInconsistency <- function(df){
 }
 
 
+### Uplaod file fixing
+
+function.fileInputFixing <- function(){
+  fileInput("fileCSVFixing", "CSV File",
+            multiple = FALSE,
+            accept = c("text/csv",
+                       "text/comma-separated-values,text/plain",
+                       ".csv"))
+}
+
+
+### Parameters box fixing
+
+function_parametersBoxFixing <- function(){
+  
+  renderUI({
+    box(width = 12,
+        title = "Parameters (CSV)",
+        status = "primary",
+        solidHeader = TRUE,
+        column(6,
+               checkboxInput("headerFixing", "Header", TRUE),
+               radioButtons("sepFixing", "Separator",
+                            choices = c("Comma" = ",",
+                                        "Semicolon" = ';',
+                                        "Tab" = "\t"),
+                            selected = ',')
+        ),
+        column(6,
+               radioButtons("quoteFixing", "Quote",
+                            choices = c(None = "",
+                                        "Double Quote" = '"',
+                                        "Single Quote" = "'"),
+                            selected = "")
+        )
+    )
+  })
+  
+}
+
+### Download after DQ config
+
+function.downloadFileDQconfig <- function(df) {
+  downloadHandler(
+    
+    filename = function() {
+      paste("MydataDQconfig", "csv", sep = ".")
+    },
+    
+    content = function(file) {
+      write.table(df, file, sep = ",",
+                  row.names = FALSE)
+    }
+  )
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

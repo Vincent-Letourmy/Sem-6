@@ -16,6 +16,9 @@ function_reactiveValues <- function() {
                  nbRowRemovedConsistency = NULL,
                  
                  dataframe_costsconfig = NULL,
+                 
+                 dataframe_fixing = NULL,
+                 
                  dataframe_results = NULL,
                  
                  columnSelected = NULL,
@@ -32,7 +35,12 @@ function_reactiveValues <- function() {
                  # Initialisation df to compare
                  accuracySaved = NULL,
                  accuracyTabSaved = NULL,
-                 resultDataSaved = NULL
+                 resultDataSaved = NULL,
+                 
+                 # Fixed df
+                 accuracyFixed = NULL,
+                 accuracyTabFixed = NULL,
+                 resultDataFixed = NULL
                  
   )
 }

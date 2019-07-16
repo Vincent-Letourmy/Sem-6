@@ -12,6 +12,9 @@ function.sidebar <- function(){
       menuItem("Data Quality Config", tabName = "dqconfig"),
       menuItem("Costs Config", tabName = "costsconfig"),
       menuItem("Results", tabName = "results"),
+      menuItem("Optional", tabName = "opt", startExpanded = TRUE, 
+               menuSubItem("Fixed Data", tabName = "fixingData"),
+               menuSubItem("Results fixed Data", tabName = "resultsfixing")),
       menuItem("Website", icon = icon("send",lib='glyphicon'), 
                href = "https://archive.ics.uci.edu/ml/datasets/Cervical+cancer+%28Risk+Factors%29")
     )
@@ -26,9 +29,12 @@ function.body <- function(){
       
       tabItem(
         tabName = "initialisation",
+        
         sidebarLayout(
+          
           sidebarPanel(
             h1("Initialisation"),
+            
             tabsetPanel(
               id = "tabsetInitialisation",
               
@@ -81,7 +87,9 @@ function.body <- function(){
       
       tabItem(
         tabName = "targetconfig",
+        
         sidebarLayout(
+          
           sidebarPanel(
             h1("Target Config"),
             
@@ -129,10 +137,13 @@ function.body <- function(){
       
       tabItem(
         tabName = "dqconfig",
+        
         sidebarLayout(
+          
           sidebarPanel(
             h1("Data Quality Config"),
             tags$hr(),
+            
             tabsetPanel(
               id = "tabsetdqconfig",
               
@@ -171,7 +182,8 @@ function.body <- function(){
                 value = "filter",
                 tags$br(),
                 box(width = 12,
-                    uiOutput("infosRowRemoved")
+                    uiOutput("infosRowRemoved"),
+                    uiOutput("downloadButtonFixing")
                 ),
                 uiOutput("fromDQConfigToNextButton")
               )
@@ -208,16 +220,21 @@ function.body <- function(){
       ),
       
       
+      
       #____________________________________________________ Costs Config _________________________________________________________________________________________#
       
       tabItem(
         tabName = "costsconfig",
+        
         sidebarLayout(
+          
           sidebarPanel(
             h1("Costs Config"),
             tags$br(),
+            
             tabsetPanel(
               id = "tabsetcosts",
+              
               tabPanel(
                 "Prediction",
                 value = "prediction",
@@ -233,6 +250,7 @@ function.body <- function(){
                   uiOutput("fromPredictionTabToNext")
                 )
               ),
+              
               tabPanel(
                 "Fixing",
                 value = "fixing",
@@ -245,9 +263,11 @@ function.body <- function(){
               )
             )
           ),
+          
           mainPanel(
             dataTableOutput("tabLoadedCostsConfig")
           )
+          
         )
       ),
       
@@ -287,8 +307,75 @@ function.body <- function(){
             )
             
           )
+        ),
+      
+      #____________________________________________________ Fixing Data _________________________________________________________________________________________#
+      
+      tabItem(
+        tabName = "fixingData",
+        
+        sidebarLayout(
+          
+          sidebarPanel(
+            h1("Fixing Data"),
+            
+            tabsetPanel(
+              id = "tabsetfixing",
+              
+              tabPanel(
+                
+                title = "Load File",
+                value = "loadfixing",
+                tags$br(),
+                fluidRow(
+                  box(width = 12,
+                      uiOutput("selectionfileFixing"),
+                      uiOutput("parametersboxFixing"),
+                      fluidRow(
+                        column(6, uiOutput("uploadbuttonFixing"))
+                      ),
+                      tags$br()
+                  )
+                ),
+                uiOutput("fromLoadfixingToNextTab")
+                
+              )
+              
+            )
+            
+          ),
+          
+          mainPanel(
+            
+            dataTableOutput("tabfixing")
+            
+          )
+          
+        )
+      ),
+      
+      tabItem(
+        tabName = "resultsfixing",
+        
+        fluidRow(
+          
+          column(12,
+                 h1("Results - Fixed data"),
+                 tags$hr(),
+                 uiOutput("accuracyvalueFixed"),
+                 tags$hr(),
+                 uiOutput("boxBarChartFixed"),
+                 tags$hr(),
+                 uiOutput("costResultsValueFixed"),
+                 tags$hr()
+                 ,
+                 uiOutput("infodataFixed"),
+                 dataTableOutput("tabLoadedResultsFixed")
+          )
         )
       )
+      
+    )
       
   )
 }

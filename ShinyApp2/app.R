@@ -14,6 +14,7 @@ source("funct_4dataquality.R")
 source("funct_5CVNaiveBayes.R")
 source("funct_6costs.R")
 source("funct_7results.R")
+source("funct_other.R")
 
 
 ui <- dashboardPage(title = 'Costs test - Week 6 (shinyApp2)', function.header(), function.sidebar(), function.body(), skin='black')
@@ -309,6 +310,15 @@ server <- function(input, output, session) {
     })
     
     
+### Download DQ config
+    
+    output$downloadDataDQconfig <- function.downloadFileDQconfig(v$dataframe_dataqualityconfig)
+    
+    output$downloadButtonFixing <- renderUI({
+        if(is.null(v$dataframe_dataqualityconfig)) return(NULL)
+        downloadButton('downloadDataDQconfig', 'Download Costs Tab')
+    })
+    
     
 ### Next Step button
     
@@ -384,8 +394,7 @@ server <- function(input, output, session) {
     output$parametersboxRanges <- function_parametersBoxRanges()
     
     
-    
-    
+   
     #____________________________________________________ Costs Config __________________________________________________________________________________________________________________________________________#
     
     
@@ -552,6 +561,101 @@ server <- function(input, output, session) {
         v$dataframe_results,
         options = list(scrollX = TRUE,pageLength = 14, searching = FALSE)
     )
+    
+    
+    #____________________________________________________ Optional : Fixing Data __________________________________________________________________________________________________________________________________________#
+    
+    ### Selection file fixing
+    
+    output$selectionfileFixing <- renderUI({
+        function.fileInputFixing()
+    })
+    
+    
+    ### Parameters box fixing
+    
+    output$parametersboxFixing <- function_parametersBoxFixing()
+    
+    
+    ### Upload button fixing
+    
+    output$uploadbuttonFixing <- renderUI({
+        actionButton("uploadbuttonFixing","Upload")
+    })
+    observeEvent(input$uploadbuttonFixing, {
+        infile <- input$fileCSVFixing
+        if (is.null(infile)) return (NULL)
+        v$dataframe_fixing <- function.loadFile(infile$datapath, input$headerFixing , input$sepFixing , input$quoteFixing)
+    })
+    
+    
+    ### Next Panel 
+    
+    output$fromLoadfixingToNextTab <- renderUI({
+        actionButton("fromLoadfixingToNextTab","Next")
+    })
+    observeEvent(input$fromLoadfixingToNextTab, {
+        #As factor to run naive Bayes
+        v$dataframe_fixing <- function.as_factor(v$dataframe_fixing)
+        
+        
+        # Naive Bayes INITIAL 
+        resultats <- function.CVNaiveBayes(v$dataframe_fixing,input$selectcolumn,v$tabCosts,input$foldselection)
+        v$resultDataFixed = sum(resultats$restab$cost * v$tabCosts$cost) * 5 
+        v$accuracyFixed <<- mean(resultats$moy)
+        v$accuracyTabFixed <<- resultats$moy
+        
+        updateTabItems(session, "sidebarmenu", "resultsfixing")
+    })
+    
+    
+    ### Database fixing
+    
+    output$tabfixing <- renderDataTable(
+        v$dataframe_fixing,
+        options = list(scrollX = TRUE,pageLength = 14, searching = FALSE)
+    )
+    
+    
+    
+    #____________________________________________________ Optional : Results fixing Data __________________________________________________________________________________________________________________________________________#
+    
+    
+    
+    output$accuracyvalueFixed <- renderValueBox(
+        function.accuracyBoxWithConfInterval(v$accuracyTabFixed, v$accuracyFixed)
+    )
+    
+    
+    
+    output$accuracyCVBarFixed <- renderPlotly (
+        function.accuracyCVBarChart(v$accuracyTabFixed, v$accuracyFixed, input$foldselection)
+    )
+    
+    
+    
+    output$boxBarChartFixed <- renderUI(
+        function.BarChartBox(v$accuracyFixed, "accuracyCVBarFixed")
+    )
+    
+    
+    
+    output$costResultsValueFixed <- renderValueBox(
+        function.costsResultsVaue(v$resultDataFixed)
+    )
+    
+    output$infodataFixed <- renderUI({
+        fluidRow(
+            h4("Initial table : ", ncol(v$dataframe_fixing), " x ", nrow(v$dataframe_fixing), "  (columns x rows)")
+        )
+    })
+    
+    
+    output$tabLoadedResultsFixed <- renderDataTable(
+        v$dataframe_fixing,
+        options = list(scrollX = TRUE,pageLength = 14, searching = FALSE)
+    )
+    
     
     
 }
