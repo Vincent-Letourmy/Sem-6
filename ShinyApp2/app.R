@@ -17,7 +17,7 @@ source("funct_7results.R")
 source("funct_other.R")
 
 
-ui <- dashboardPage(title = 'Costs test - Week 6 (shinyApp2)', function.header(), function.sidebar(), function.body(), skin='black')
+ui <- dashboardPage(title = 'Costs test - Week 6', function.header(), function.sidebar(), function.body(), skin='black')
 
 
 server <- function(input, output, session) {
@@ -363,16 +363,11 @@ server <- function(input, output, session) {
         
         v$nbRowRemovedConsistency <- length(rowRemove)
         v$dataframe_dataqualityconfig <- v$dataframe_dataqualityconfig[! rownames(v$dataframe_dataqualityconfig)%in%rowRemove, ]
-        
+        v$matrixBool <- v$matrixBool[rownames(v$dataframe_dataqualityconfig),]
         
         updateTabsetPanel(session, "tabsetdqconfig", selected = "result")
         updateTabsetPanel(session, "tabset", selected = "database")
     })
-    
-
-    
-
-    
     
 
     
@@ -613,7 +608,7 @@ server <- function(input, output, session) {
     
     
     output$infodata <- renderUI({
-        comp <- function.nbInconsistenciesValues(v$dataframe_results)
+        comp <- function.nbInconsistenciesValues(v$matrixBool)
         fluidRow(
             h4("New table : ", ncol(v$dataframe_results), " x ", nrow(v$dataframe_results), "  (columns x rows)"),
             h4("Missing and inconsisting values : ", comp)
