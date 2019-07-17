@@ -41,68 +41,86 @@ function.barChartMissingValues <- function(df){
 }
 
 
-#--- Consistency --------------------------------------------------------------------------------------------------------#
+### Bar chart inconsistency
 
-
-### Prepare 
-
-function.df_prepareRemove <- function(df,types){
-  
-  for (col in names(df)) {
-    
-    if (types[,col] == "string"){
-      df[,col] <- as.character(df[,col])
-    }
-    
-    else if (types[,col] == "numeric") {
-      df[,col] <- as.character(df[,col])
-      df[,col] <- as.numeric(df[,col])
-    }
-    
-    else if (types[,col] == "integer") {
-      df[,col] <- as.character(df[,col])
-      df[,col] <- as.integer(df[,col])
-    }
+function.barChartInconsistency <- function(matrixBool){
+  res <- 0
+  for (col in names(matrixBool)){
+    column <- matrixBool[,col]
+    res[col] <- round ( sum(column == 1) / length(column) * 100 , digits = 2 )
   }
-  return(df)
+  res <- res[-1]
+  return(res)
 }
 
 
-### Remove MV and inconsistencies
+#--- Consistency --------------------------------------------------------------------------------------------------------#
 
-function.removeMVandConsistency <- function(df,ranges){
+
+### 0/1 file inconsistency
+
+function.matrixBooleanConsistency <- function(df,types,ranges){
   
-  rowRemove <- 0
+  n1 <- nrow(df)
+  n2 <- ncol(df)
+  a <- data.frame(matrix (rep(0, n1*n2), n1, n2))
+  names(a) <- names(df)
+  rownames(a) <- rownames(df)
   
-  for (ligne in row.names(df)){
+  for (col in names(df)) {
+    typ <- types[,col]
     
-    for (col in names(df)) {
+    if (typ == "string"){
+      df[,col] <- as.character(df[,col])
+      rang <- ranges[,col]
+    }
+    else if (typ == "numeric" || typ == "integer") {
+      df[,col] <- as.character(df[,col])
+      df[,col] <- as.numeric(df[,col])
+      rangMin <- ranges[1,col]
+      rangMax <- ranges[2,col]
+    }
+    
+    for (ligne in row.names(df)){
+      
       val <- df[ligne,col]
       
-      if (class(val) == "numeric" || class(val) == "integer") {
-        
-        if (is.na(val)){
-          rowRemove[ligne] <- ligne
-          break
+      if (typ == "numeric" || typ == "integer") {
+        if (! is.na(val)){
+          if (val < rangMin || val > rangMax) {
+            a[ligne,col] <- 1
+          }
         }
-        else if (val < ranges[1,col] || val > ranges[2,col]) {
-          rowRemove[ligne] <- ligne
-          break
-        }
+        else a[ligne,col] <- 1
       }
-      
-      else if (class(val) == "string") {
-        
-        if (val %in% ranges[,col] && val != ""){}
-        else {
-          rowRemove[ligne] <- ligne
-          break
+      else if (typ == "string") {
+        if (! is.na(val)){
+          if (val %in% rang && val != ""){}
+          else a[ligne,col] <- 1
         }
+        else a[ligne,col] <- 1
       }
     }
   }
-  
-  return(rowRemove[-1])
+  return(a)
+}
+
+function.removeConsistency <- function(df, a){
+  rem <- 0
+  for (row in row.names(a)) {
+    if (1 %in% a[row,]) rem[row] = row
+  }
+  return(rem[-1])
+}
+
+function.nbInconsistenciesValues <- function(matrixBool){
+  res <- 0
+  for (col in names(matrixBool)){
+    column <- matrixBool[,col]
+    res[col] <- sum(column == 1)
+  }
+  res <- res[-1]
+  return(sum(res))
 }
 
 

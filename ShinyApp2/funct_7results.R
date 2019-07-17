@@ -54,6 +54,27 @@ function.costsResultsVaue <- function(resultData){
     ,color = "green")
 }
 
+
+function.costsResultsVaueFixed <- function(resultData, fixingCost){
+  result <- round(resultData + fixingCost, digits = 0)
+  valueBox(
+    value = paste("Cost : ",result)
+    ,paste('Cost of prediction fail :',round(resultData,digits = 2), " + cost of fixing :", round(fixingCost,digits = 2))
+    ,icon = icon("menu-hamburger",lib='glyphicon')
+    ,color = "green")
+}
+
+
+function.tabCostsTotal <- function(resultats, costs, div){
+  nouv <- 0
+  for (row in 1:length(resultats)) {
+    nouv[row] <- resultats[row] * costs[row] * 5 / div
+  }
+  return(nouv)
+}
+
+
+
 function.nbMissingValues <- function(df){
   comp <- 0
   for (i in df){

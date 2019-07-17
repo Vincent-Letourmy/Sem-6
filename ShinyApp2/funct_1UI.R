@@ -57,6 +57,25 @@ function.body <- function(){
               ),
               
               tabPanel(
+                "Types/Ranges",
+                value = "typesranges",
+                fluidRow(
+                  box(width = 12,
+                      uiOutput("selectionfileTypes"),
+                      uiOutput("parametersboxTypes"),
+                      uiOutput("typesButton")
+                  ),
+                  box(width = 12,
+                      uiOutput("selectionfileRanges"),
+                      uiOutput("parametersboxRanges"),
+                      uiOutput("rangesButton")
+                  ),
+                  uiOutput("fromRangesToNextButton")
+                  
+                )
+              ),
+              
+              tabPanel(
                 "Define NAs",
                 value = "defineNas",
                 tags$br(),
@@ -77,7 +96,26 @@ function.body <- function(){
             )
           ),
           mainPanel(
-            dataTableOutput("tabLoadedInitialisation")
+            tabsetPanel(
+              id = "tabsetinit",
+              
+              tabPanel(
+                "Database",
+                value = "database",
+                dataTableOutput("tabLoadedInitialisation"),
+                rHandsontableOutput("dataframeInit")
+              ),
+            
+            
+              tabPanel(
+                "Types and Ranges",
+                value = "typesranges",
+                h3("Types and Ranges"),
+                dataTableOutput("typesFile"),
+                dataTableOutput("rangesFile")
+              )
+              
+            )
           )
         )
       ),
@@ -160,26 +198,8 @@ function.body <- function(){
               ),
               
               tabPanel(
-                "Types/Ranges",
-                value = "typesranges",
-                fluidRow(
-                  box(width = 12,
-                      uiOutput("selectionfileTypes"),
-                      uiOutput("parametersboxTypes"),
-                      uiOutput("typesButton")
-                  ),
-                  box(width = 12,
-                      uiOutput("selectionfileRanges"),
-                      uiOutput("parametersboxRanges"),
-                      uiOutput("rangesButton")
-                  ),
-                  uiOutput("fromRangesToNextButton")
-                )
-              ),
-              
-              tabPanel(
                 "Result",
-                value = "filter",
+                value = "result",
                 tags$br(),
                 box(width = 12,
                     uiOutput("infosRowRemoved"),
@@ -199,14 +219,6 @@ function.body <- function(){
                 value = "barchart",
                 h3("Pourcentage of missing values in each column"),
                 plotlyOutput("NAsBarChart")
-              ),
-              
-              tabPanel(
-                "Types and Ranges",
-                value = "typesranges",
-                h3("Types and Ranges"),
-                dataTableOutput("typesFile"),
-                dataTableOutput("rangesFile")
               ),
               
               tabPanel(
@@ -247,19 +259,8 @@ function.body <- function(){
                       uiOutput("downloadButton")
                   ),
                   tags$hr(),
-                  uiOutput("fromPredictionTabToNext")
+                  uiOutput("fromCostsToNextButton")
                 )
-              ),
-              
-              tabPanel(
-                "Fixing",
-                value = "fixing",
-                fluidRow(
-                  box(width = 12,
-                      uiOutput("costFixingSelection")
-                    )
-                ),
-                uiOutput("fromCostsToNextButton")
               )
             )
           ),
@@ -282,28 +283,60 @@ function.body <- function(){
                    h1("Results - Initial"),
                    tags$hr(),
                    uiOutput("accuracyvalueSaved"),
-                   tags$hr(),
-                   uiOutput("boxBarChartSaved"),
+                   
                    tags$hr(),
                    uiOutput("costResultsValueSaved"),
-                   tags$hr()
-                   ,
+                   tags$hr(),
+                   fluidRow(
+                     uiOutput("boxDetailsInit")
+                   ),
+                   tags$hr(),
                    uiOutput("infodataSaved"),
-                   dataTableOutput("tabLoadedResultsSaved")
+                   fluidRow(
+                     box(width = 12,
+                         title = "DataBase"
+                         ,status = "primary"
+                         ,solidHeader = TRUE
+                         ,collapsible = TRUE
+                         ,collapsed = TRUE
+                       
+                         ,dataTableOutput("tabLoadedResultsSaved")
+                       
+                     )
+                   ),
+                   tags$hr(),
+                   uiOutput("boxBarChartSaved")
             ),
             
             column(6,
                    h1("Results - According Data Quality Config"),
                    tags$hr(),
                    uiOutput("accuracyvalue"),
-                   tags$hr(),
-                   uiOutput("boxBarChar"),
+                  
                    tags$hr(),
                    uiOutput("costresultsvalue"),
-                   tags$hr()
-                   ,
+                   tags$hr(),
+                   fluidRow(
+                   uiOutput("boxDetailsDQ")
+                   ),
+                   tags$hr(),
                    uiOutput("infodata"),
-                   dataTableOutput("tabLoadedResults")
+                   fluidRow(
+                     box(width = 12,
+                         title = "DataBase"
+                         ,status = "primary"
+                         ,solidHeader = TRUE
+                         ,collapsible = TRUE
+                         ,collapsed = TRUE
+                         
+                         ,dataTableOutput("tabLoadedResults")
+                         
+                     )
+                   ),
+                   
+                   
+                   tags$hr(),
+                   uiOutput("boxBarChar")
             )
             
           )
@@ -337,8 +370,19 @@ function.body <- function(){
                       tags$br()
                   )
                 ),
-                uiOutput("fromLoadfixingToNextTab")
+                uiOutput("fromLoadToNext")
                 
+              ),
+              
+              tabPanel(
+                "Fixing",
+                value = "fixing",
+                fluidRow(
+                  box(width = 12,
+                      uiOutput("costFixingSelection")
+                  )
+                ),
+                uiOutput("fromLoadfixingToNextTab")
               )
               
             )
@@ -359,18 +403,35 @@ function.body <- function(){
         
         fluidRow(
           
-          column(12,
+          column(6,
                  h1("Results - Fixed data"),
                  tags$hr(),
                  uiOutput("accuracyvalueFixed"),
-                 tags$hr(),
-                 uiOutput("boxBarChartFixed"),
+                 
                  tags$hr(),
                  uiOutput("costResultsValueFixed"),
-                 tags$hr()
-                 ,
+                 tags$hr(),
+                 fluidRow(
+                 uiOutput("boxDetailsFixed")
+                 ),
+                 tags$hr(),
                  uiOutput("infodataFixed"),
-                 dataTableOutput("tabLoadedResultsFixed")
+                 
+                 fluidRow(
+                   box(width = 12,
+                       title = "DataBase"
+                       ,status = "primary"
+                       ,solidHeader = TRUE
+                       ,collapsible = TRUE
+                       ,collapsed = TRUE
+                       
+                       ,dataTableOutput("tabLoadedResultsFixed")
+                       
+                   )
+                 ),
+                 
+                 tags$hr(),
+                 uiOutput("boxBarChartFixed")
           )
         )
       )

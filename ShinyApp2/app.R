@@ -26,7 +26,7 @@ server <- function(input, output, session) {
     
     #__________________________________________________ Initialisation _____________________________________________________________________________________________________________________________________________#
     
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Buttons ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Init Buttons ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     
     
 ### Upload File Button
@@ -58,8 +58,89 @@ server <- function(input, output, session) {
         actionButton("fromLoadToNextTab", "Next")
     })
     observeEvent(input$fromLoadToNextTab, {
-        updateTabsetPanel(session, "tabsetInitialisation", "defineNas")
+        updateTabsetPanel(session, "tabsetInitialisation", "typesranges")
+        updateTabsetPanel(session, "tabsetinit", "typesranges")
     })
+    
+
+#---- TYPES AND RANGES -----------------------------#
+    
+    
+### TYPES selection file
+    
+    output$selectionfileTypes <- renderUI({
+        function.fileInputTypes()
+    })
+    
+    
+### Box Types
+    
+    output$parametersboxTypes <- function_parametersBoxTypes()
+
+    
+    
+### TYPES upload file
+    
+    output$typesButton <- renderUI({
+        infileTypes <- input$fileCSVTypes
+        if (is.null(infileTypes)) return (NULL)
+        actionButton("typesButton", "Upload Types")
+    })
+    observeEvent(input$typesButton,{
+        infileTypes <- input$fileCSVTypes
+        if (is.null(infileTypes)) return (NULL)
+        v$df_types <- function.loadFile(infileTypes$datapath, input$headerTypes , input$sepTypes , input$quoteTypes)
+    })
+    
+    
+    
+### RANGES selection file
+    
+    output$selectionfileRanges <- renderUI({
+        function.fileInputRanges()
+    })
+    
+    
+### Box ranges
+    
+    output$parametersboxRanges <- function_parametersBoxRanges()
+    
+    
+### RANGES upload file
+    
+    output$rangesButton <- renderUI({
+        infileRanges <- input$fileCSVRanges
+        if (is.null(infileRanges)) return (NULL)
+        actionButton("rangesButton", "Upload Ranges")
+    })
+    observeEvent(input$rangesButton,{
+        infileRanges <- input$fileCSVRanges
+        if (is.null(infileRanges)) return (NULL)
+        v$df_ranges <- function.loadFile(infileRanges$datapath, input$headerRanges , input$sepRanges , input$quoteRanges)
+    })
+    
+    
+### TYPES/RANGES next tab button
+    
+    output$fromRangesToNextButton <- renderUI({
+        if (is.null(v$df_types) || is.null(v$df_ranges)) return(NULL)
+        actionButton("fromRangesToNextButton","Next")
+    })
+    observeEvent(input$fromRangesToNextButton,{
+        
+        #v$matrixBooloeanMissingValues_Consistency <- function.matrixBooleanConsistency(v$dataframe_dataqualityconfig, v$df_types, v$df_ranges)
+        #v$dataframe_dataqualityconfig <- function.removeConsistency(v$dataframe_dataqualityconfig, v$matrixBooloeanMissingValues_Consistency)
+        
+        #rowRemove <- function.removeMVandConsistency(function.df_prepareRemove(v$dataframe_dataqualityconfig,v$df_types), v$df_ranges)
+        #v$nbRowRemovedConsistency <- length(rowRemove)
+        #v$dataframe_dataqualityconfig <- v$dataframe_dataqualityconfig[! rownames(v$dataframe_dataqualityconfig)%in%rowRemove, ]
+        
+        updateTabsetPanel(session,"tabsetInitialisation", "defineNas")
+        updateTabsetPanel(session, "tabsetinit", "database")
+    })
+    
+    
+#-----------------------------------#
     
     
 ### Next Panel button
@@ -70,12 +151,17 @@ server <- function(input, output, session) {
     })
     observeEvent(input$fromInitToNextButton,{
         v$dataframe_targetconfig <- v$dataframe_initialisation
+        
+        #!# Creation matrix boolean missing and inconsistencing values
+        v$matrixBoolInit <- v$matrixBool <- function.matrixBooleanConsistency(v$dataframe_initialisation,v$df_types,v$df_ranges)
+        #!#
+        
         updateTabItems(session,"sidebarmenu", "targetconfig")
     })
     
     
     
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Selections ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Init Selections ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     
     
 ### Selection file
@@ -102,6 +188,8 @@ server <- function(input, output, session) {
     })
     
     
+    
+    
 ### Validate parameters button
     
     output$confirmNAs <- renderUI({
@@ -124,10 +212,11 @@ server <- function(input, output, session) {
                 v$dataframe_initialisation [which(v$dataframe_initialisation [,col] == "NA"), col] <- NA
             }
         }
+        
     })
     
     
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Renders ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Init Renders ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     
 ### DataBase initial
     
@@ -136,12 +225,32 @@ server <- function(input, output, session) {
         options = list(scrollX = TRUE,pageLength = 14, searching = FALSE)
     )
     
+    
+    
+### Types table
+    
+    output$typesFile <- renderDataTable(
+        v$df_types,
+        options = list(scrollX = TRUE,pageLength = 5, searching = FALSE)
+    )
+    
+    
+### Ranges table
+    
+    output$rangesFile <- renderDataTable(
+        v$df_ranges,
+        options = list(scrollX = TRUE,pageLength = 10, searching = FALSE)
+    )
+    
+    
     #____________________________________________________ Target Config __________________________________________________________________________________________________________________________________________#
     
     
     
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Selections ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Target Selections ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     
+    
+### Selection of target
     
     output$selectcolumn <- renderUI(
         function.selectionColumn(v$dataframe_initialisation)
@@ -151,9 +260,14 @@ server <- function(input, output, session) {
     })
     
     
+### Selection of fold for Naive Bayes
+    
     output$foldselection <- renderUI({
         sliderInput("foldselection","Number of fold for Cross Validation (Naive Bayes)", 1,50,10)
     })
+    
+    
+### Selection of other targets for removing
     
     output$checkBox <- renderUI({ 
         
@@ -163,8 +277,10 @@ server <- function(input, output, session) {
     })
     
     
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Buttons ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Target Buttons ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     
+    
+### Next tab
     
     output$nextButton <- renderUI({
         actionButton("nextButton","Next")
@@ -174,6 +290,8 @@ server <- function(input, output, session) {
     })
     
     
+### Remove other targets button
+    
     output$ValidCheckBox <- renderUI({
         actionButton("OK","Remove")
     })
@@ -182,21 +300,27 @@ server <- function(input, output, session) {
             
             list <- data.frame(Column = input$targets)
             v$dataframe_targetconfig <- v$dataframe_targetconfig[,!names(v$dataframe_targetconfig)%in%list$Column]
-            
+            v$matrixBoolInit <- v$matrixBool <- v$matrixBool[,!names(v$matrixBool)%in%list$Column]
         }
     })
     
+    
+### Next Step
     
     output$fromTargetToNextButton <- renderUI({
         actionButton("fromTargetToNextButton","Next Step")
     })
     observeEvent(input$fromTargetToNextButton,{
         v$dataframe_dataqualityconfig <- v$dataframe_dataqualityconfigBis <- v$dataframe_targetconfig
+        v$resNAsBarChart <- function.barChartInconsistency(v$matrixBool)
         updateTabItems(session,"sidebarmenu", "dqconfig")
     })
     
     
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Renders ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Target Renders ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    
+    
+### DataBase
     
     output$tabLoadedTargetConfig <- renderDataTable(
         v$dataframe_targetconfig,
@@ -224,82 +348,33 @@ server <- function(input, output, session) {
     })
     observeEvent(input$removecolumnbutton,{
         v$dataframe_dataqualityconfig <- function.removeColumns(v$resNAsBarChart, v$dataframe_dataqualityconfigBis, input$pourcentageSelection, v$columnSelected)
+        v$matrixBool <- v$matrixBool[,names(v$dataframe_dataqualityconfig)]
     })
     
     
-### Next tab button : Remove columns -> Types Ranges config  
+### Next tab button : Remove columns -> Types Ranges config  # a changer
     
     output$fromRemoveColToNext <- renderUI({
-        actionButton("fromRemoveColToNext","Next")
+        actionButton("fromRemoveColToNext","Filter according DQ config Files")
     })
     observeEvent(input$fromRemoveColToNext,{
-        updateTabsetPanel(session, "tabsetdqconfig", selected = "typesranges")
-        updateTabsetPanel(session, "tabset", selected = "typesranges")
+        
+        rowRemove <- function.removeConsistency(v$dataframe_dataqualityconfig,v$matrixBool)
+        
+        v$nbRowRemovedConsistency <- length(rowRemove)
+        v$dataframe_dataqualityconfig <- v$dataframe_dataqualityconfig[! rownames(v$dataframe_dataqualityconfig)%in%rowRemove, ]
+        
+        
+        updateTabsetPanel(session, "tabsetdqconfig", selected = "result")
+        updateTabsetPanel(session, "tabset", selected = "database")
     })
     
 
     
-### TYPES selection file
-    
-    output$selectionfileTypes <- renderUI({
-        function.fileInputTypes()
-    })
+
     
     
-### TYPES upload file
-    
-    output$typesButton <- renderUI({
-        actionButton("typesButton", "Upload Types")
-    })
-    observeEvent(input$typesButton,{
-        infileTypes <- input$fileCSVTypes
-        if (is.null(infileTypes)) return (NULL)
-        v$df_types <- function.loadFile(infileTypes$datapath, input$headerTypes , input$sepTypes , input$quoteTypes)
-        v$df_types <- v$df_types[,names(v$dataframe_dataqualityconfig)]
-    })
-    
-    
-    
-### RANGES selection file
-    
-    output$selectionfileRanges <- renderUI({
-        function.fileInputRanges()
-    })
-    
-    
-### RANGES upload file
-    
-    output$rangesButton <- renderUI({
-        infileRanges <- input$fileCSVRanges
-        if (is.null(infileRanges)) return (NULL)
-        actionButton("rangesButton", "Upload Ranges")
-    })
-    observeEvent(input$rangesButton,{
-        infileRanges <- input$fileCSVRanges
-        if (is.null(infileRanges)) return (NULL)
-        v$df_ranges <- function.loadFile(infileRanges$datapath, input$headerRanges , input$sepRanges , input$quoteRanges)
-        v$df_ranges <- v$df_ranges[,names(v$dataframe_dataqualityconfig)]
-    })
-    
-    
-### RANGES next tab button
-    
-    output$fromRangesToNextButton <- renderUI({
-        if (is.null(v$df_types) || is.null(v$df_ranges)) return(NULL)
-        actionButton("fromRangesToNextButton","Next")
-    })
-    observeEvent(input$fromRangesToNextButton,{
-        
-        #v$matrixBooloeanMissingValues_Consistency <- function.matrixBooleanConsistency(v$dataframe_dataqualityconfig, v$df_types, v$df_ranges)
-        #v$dataframe_dataqualityconfig <- function.removeConsistency(v$dataframe_dataqualityconfig, v$matrixBooloeanMissingValues_Consistency)
-        
-        rowRemove <- function.removeMVandConsistency(function.df_prepareRemove(v$dataframe_dataqualityconfig,v$df_types), v$df_ranges)
-        v$nbRowRemovedConsistency <- length(rowRemove)
-        v$dataframe_dataqualityconfig <- v$dataframe_dataqualityconfig[! rownames(v$dataframe_dataqualityconfig)%in%rowRemove, ]
-        
-        updateTabsetPanel(session,"tabsetdqconfig", "filter")
-        updateTabsetPanel(session, "tabset", selected = "database")
-    })
+
     
     
 ### Infos nb Row removed
@@ -316,7 +391,7 @@ server <- function(input, output, session) {
     
     output$downloadButtonFixing <- renderUI({
         if(is.null(v$dataframe_dataqualityconfig)) return(NULL)
-        downloadButton('downloadDataDQconfig', 'Download Costs Tab')
+        downloadButton('downloadDataDQconfig', 'Download CSV')
     })
     
     
@@ -334,19 +409,21 @@ server <- function(input, output, session) {
     
     
     
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Renders ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ DataQuality Renders ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     
 ### Bar chart missing and inconsistency values
     
     output$NAsBarChart <- renderPlotly({
-        v$resNAsBarChart <-res <- function.barChartMissingValues(v$dataframe_dataqualityconfig)
-        res <- sort(res, decreasing = TRUE)
+        pourcent <- input$pourcentageSelection
+        if (is.null(pourcent)) return(NULL)
+        
+        res <- sort(v$resNAsBarChart, decreasing = TRUE)
         col_names <- names(res)
         
         plot_ly(x = factor(col_names, levels = col_names), 
                 y = res, 
                 type = "bar",
-                color = res > input$pourcentageSelection, colors = c("#132B43", "#56B1F7")
+                color = res > pourcent, colors = c("#132B43", "#56B1F7")
         ) %>% 
             layout(xaxis = list(title = "Column's name"),
                    yaxis = list(title = "Pourcentage of missing values"))
@@ -362,22 +439,7 @@ server <- function(input, output, session) {
         options = list(scrollX = TRUE,pageLength = 14, searching = FALSE)
     )
 
-    
-### Types table
-    
-    output$typesFile <- renderDataTable(
-        v$df_types,
-        options = list(scrollX = TRUE,pageLength = 5, searching = FALSE)
-    )
-    
-    
-### Ranges table
-    
-    output$rangesFile <- renderDataTable(
-        v$df_ranges,
-        options = list(scrollX = TRUE,pageLength = 10, searching = FALSE)
-    )
-    
+
     
 ### Tab 0/1 Consistency
     
@@ -387,18 +449,14 @@ server <- function(input, output, session) {
     )
     
     
-### Boxes Types and Ranges
-    
-    output$parametersboxTypes <- function_parametersBoxTypes()
-    
-    output$parametersboxRanges <- function_parametersBoxRanges()
+
     
     
    
     #____________________________________________________ Costs Config __________________________________________________________________________________________________________________________________________#
     
     
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Renders ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Costs Renders ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     
     
     output$tabLoadedCostsConfig <- renderDataTable(
@@ -416,13 +474,8 @@ server <- function(input, output, session) {
     output$downloadData <- function.downloadFile(v$tabCosts)
     
     
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Buttons ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Costs Buttons ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     
-    
-    output$downloadButton <- renderUI({
-        if (v$validate == FALSE) return(NULL)
-        downloadButton('downloadData', 'Download Costs Tab')
-    })
     
     output$validate <- renderUI(
         actionButton("validate","Validate"),
@@ -430,6 +483,12 @@ server <- function(input, output, session) {
     observeEvent(input$validate,{
         v$tabCosts <- function.saveDataInFile(input$costsTab, "MyData.csv")
         v$validate <- TRUE
+    })
+    
+    
+    output$downloadButton <- renderUI({
+        if (v$validate == FALSE) return(NULL)
+        downloadButton('downloadData', 'Download Costs Tab')
     })
     
     
@@ -448,16 +507,25 @@ server <- function(input, output, session) {
         
         # Naive Bayes INITIAL 
         resultats <- function.CVNaiveBayes(v$dataframe_targetconfig,input$selectcolumn,v$tabCosts,input$foldselection)
-        v$resultDataSaved = sum(resultats$restab$cost * v$tabCosts$cost) * 5 
+        
+        v$tabDetailsCostsInit <- data.frame(v$tabCosts, Total = function.tabCostsTotal(resultats$restab$cost,v$tabCosts$Cost, 1))
+        
+        v$resultDataSaved = sum(resultats$restab$cost * v$tabCosts$Cost) * 5 
         v$accuracySaved <<- mean(resultats$moy)
         v$accuracyTabSaved <<- resultats$moy
         
         
         # Naive Bayes according DQ config #
-        resultats <- function.CVNaiveBayes(v$dataframe_results,input$selectcolumn,v$tabCosts,input$foldselection)
-        v$resultData = sum(resultats$restab$cost * v$tabCosts$cost) * 5 
-        v$accuracy <<- mean(resultats$moy)
-        v$accuracyTab <<- resultats$moy
+        resultatsDQ <- function.CVNaiveBayes(v$dataframe_results,input$selectcolumn,v$tabCosts,input$foldselection)
+        
+        div <- (nrow(v$dataframe_results) / nrow(v$dataframe_targetconfig))
+        first <- (sum(resultatsDQ$restab$cost * v$tabCosts$Cost) * 5 )
+        
+        v$tabDetailsCostsDQ <- data.frame(v$tabCosts, Total = function.tabCostsTotal(resultatsDQ$restab$cost,v$tabCosts$Cost, div))
+        
+        v$resultData = first / div
+        v$accuracy <<- mean(resultatsDQ$moy)
+        v$accuracyTab <<- resultatsDQ$moy
         
         
         updateTabItems(session,"sidebarmenu", "results")
@@ -465,20 +533,7 @@ server <- function(input, output, session) {
     
     
     
-### Selection Cost Fixing
-    
-    
-    output$costFixingSelection <- renderUI({
-        numericInput("costFixingSelection", label = "Choose a cost of fixing one value", value = 3,min = 0,max = 100,step = 1)
-    })
-    
-    output$fromPredictionTabToNext <- renderUI({
-        if (is.null(v$dataframe_costsconfig) || v$validate == FALSE) return (NULL)
-        actionButton("fromPredictionTabToNext","Next")
-    })
-    observeEvent(input$fromPredictionTabToNext,{
-        updateTabsetPanel(session,"tabsetcosts","fixing")
-    })
+
     
     
     #_______________________________________________________ Compare Results INITIAL / DQ config ____________________________________________________________________________________________#
@@ -492,11 +547,9 @@ server <- function(input, output, session) {
     )
     
     
-    
     output$accuracyCVBarSaved <- renderPlotly (
         function.accuracyCVBarChart(v$accuracyTabSaved, v$accuracySaved, input$foldselection)
     )
-    
     
     
     output$boxBarChartSaved <- renderUI(
@@ -504,16 +557,15 @@ server <- function(input, output, session) {
     )
     
     
-    
     output$costResultsValueSaved <- renderValueBox(
         function.costsResultsVaue(v$resultDataSaved)
     )
     
     output$infodataSaved <- renderUI({
-        comp <- function.nbMissingValues(v$dataframe_targetconfig)
+        comp <- function.nbInconsistenciesValues(v$matrixBoolInit)
         fluidRow(
             h4("Initial table : ", ncol(v$dataframe_targetconfig), " x ", nrow(v$dataframe_targetconfig), "  (columns x rows)"),
-            h4("Missing Values : ", comp)
+            h4("Missing and inconsisting values : ", comp)
         )
     })
     
@@ -522,6 +574,20 @@ server <- function(input, output, session) {
         v$dataframe_targetconfig,
         options = list(scrollX = TRUE,pageLength = 14, searching = FALSE)
     )
+    
+    
+    output$tabDetailsInit <- renderTable(
+        v$tabDetailsCostsInit
+    )
+    
+    output$boxDetailsInit <- renderUI({
+        box( 
+            title = "Details of costs"
+            ,status = "primary"
+            ,solidHeader = TRUE 
+            ,tableOutput("tabDetailsInit")
+        )
+    })
     
     
     
@@ -533,7 +599,6 @@ server <- function(input, output, session) {
     )
     
     
-    
     output$accuracyCVbar <- renderPlotly (
         function.accuracyCVBarChart(v$accuracyTab, v$accuracy, input$foldselection)
     )
@@ -542,17 +607,16 @@ server <- function(input, output, session) {
     )
     
     
-    
     output$costresultsvalue <- renderValueBox(
         function.costsResultsVaue(v$resultData)
     )
     
     
     output$infodata <- renderUI({
-        comp <- function.nbMissingValues(v$dataframe_results)
+        comp <- function.nbInconsistenciesValues(v$dataframe_results)
         fluidRow(
             h4("New table : ", ncol(v$dataframe_results), " x ", nrow(v$dataframe_results), "  (columns x rows)"),
-            h4("Missing Values : ", comp)
+            h4("Missing and inconsisting values : ", comp)
         )
     })
     
@@ -562,22 +626,39 @@ server <- function(input, output, session) {
         options = list(scrollX = TRUE,pageLength = 14, searching = FALSE)
     )
     
+    output$tabDetailsDQ <- renderTable(
+        v$tabDetailsCostsDQ
+    )
+    
+    output$boxDetailsDQ <- renderUI({
+        box( 
+            title = "Details of costs"
+            ,status = "primary"
+            ,solidHeader = TRUE 
+            ,tableOutput("tabDetailsDQ")
+        )
+    })
+    
     
     #____________________________________________________ Optional : Fixing Data __________________________________________________________________________________________________________________________________________#
     
-    ### Selection file fixing
+    
+#---- LOAD FILE ----#
+    
+    
+### Selection file fixing
     
     output$selectionfileFixing <- renderUI({
         function.fileInputFixing()
     })
     
     
-    ### Parameters box fixing
+### Parameters box fixing
     
     output$parametersboxFixing <- function_parametersBoxFixing()
     
     
-    ### Upload button fixing
+### Upload button fixing
     
     output$uploadbuttonFixing <- renderUI({
         actionButton("uploadbuttonFixing","Upload")
@@ -586,10 +667,38 @@ server <- function(input, output, session) {
         infile <- input$fileCSVFixing
         if (is.null(infile)) return (NULL)
         v$dataframe_fixing <- function.loadFile(infile$datapath, input$headerFixing , input$sepFixing , input$quoteFixing)
+        
+        
+        
     })
     
     
-    ### Next Panel 
+### Next tab
+    
+    output$fromLoadToNext <- renderUI({
+        if (is.null(v$dataframe_fixing) || v$validate == FALSE) return (NULL)
+        actionButton("fromLoadToNext","Next")
+    })
+    observeEvent(input$fromLoadToNext,{
+        
+        #!# Remove other targets columns 
+        v$dataframe_fixing <- v$dataframe_fixing[, names(v$matrixBoolInit)]
+        
+        updateTabsetPanel(session,"tabsetfixing","fixing")
+    })
+    
+    
+    
+#---- Cost of fixing ----#
+    
+### Selection Cost Fixing
+    
+    output$costFixingSelection <- renderUI({
+        numericInput("costFixingSelection", label = "Choose a cost of fixing one value", value = 3,min = 0,max = 100,step = 1)
+    })
+    
+    
+### Next Panel 
     
     output$fromLoadfixingToNextTab <- renderUI({
         actionButton("fromLoadfixingToNextTab","Next")
@@ -599,9 +708,18 @@ server <- function(input, output, session) {
         v$dataframe_fixing <- function.as_factor(v$dataframe_fixing)
         
         
-        # Naive Bayes INITIAL 
+        # Naive Bayes Fixing 
         resultats <- function.CVNaiveBayes(v$dataframe_fixing,input$selectcolumn,v$tabCosts,input$foldselection)
-        v$resultDataFixed = sum(resultats$restab$cost * v$tabCosts$cost) * 5 
+        
+        v$resultDataFixed = sum(resultats$restab$cost * v$tabCosts$Cost) * 5 
+        
+        v$tabDetailsCostsFixed <- data.frame(v$tabCosts, Total = function.tabCostsTotal(resultats$restab$cost,v$tabCosts$Cost, 1))
+        
+        num <- function.nbInconsistenciesValues(v$matrixBoolInit)
+        costInput <- input$costFixingSelection
+
+        v$fixingCost <- num * costInput
+            
         v$accuracyFixed <<- mean(resultats$moy)
         v$accuracyTabFixed <<- resultats$moy
         
@@ -609,7 +727,9 @@ server <- function(input, output, session) {
     })
     
     
-    ### Database fixing
+#---- Main Panel ----#
+    
+### Database fixing
     
     output$tabfixing <- renderDataTable(
         v$dataframe_fixing,
@@ -621,32 +741,28 @@ server <- function(input, output, session) {
     #____________________________________________________ Optional : Results fixing Data __________________________________________________________________________________________________________________________________________#
     
     
-    
     output$accuracyvalueFixed <- renderValueBox(
         function.accuracyBoxWithConfInterval(v$accuracyTabFixed, v$accuracyFixed)
     )
     
     
-    
     output$accuracyCVBarFixed <- renderPlotly (
         function.accuracyCVBarChart(v$accuracyTabFixed, v$accuracyFixed, input$foldselection)
     )
-    
-    
+
     
     output$boxBarChartFixed <- renderUI(
         function.BarChartBox(v$accuracyFixed, "accuracyCVBarFixed")
     )
     
     
-    
     output$costResultsValueFixed <- renderValueBox(
-        function.costsResultsVaue(v$resultDataFixed)
+        function.costsResultsVaueFixed(v$resultDataFixed, v$fixingCost)
     )
     
     output$infodataFixed <- renderUI({
         fluidRow(
-            h4("Initial table : ", ncol(v$dataframe_fixing), " x ", nrow(v$dataframe_fixing), "  (columns x rows)")
+            h4("Fixed table : ", ncol(v$dataframe_fixing), " x ", nrow(v$dataframe_fixing), "  (columns x rows)")
         )
     })
     
@@ -655,6 +771,20 @@ server <- function(input, output, session) {
         v$dataframe_fixing,
         options = list(scrollX = TRUE,pageLength = 14, searching = FALSE)
     )
+    
+    
+    output$tabDetailsFixed <- renderTable(
+        v$tabDetailsCostsFixed
+    )
+    
+    output$boxDetailsFixed <- renderUI({
+        box( 
+            title = "Details of costs"
+            ,status = "primary"
+            ,solidHeader = TRUE 
+            ,tableOutput("tabDetailsFixed")
+        )
+    })
     
     
     

@@ -308,4 +308,64 @@ function_parametersBoxRanges <- function(){
   
 }
 
+### Prepare 
+
+function.df_prepareRemove <- function(df,types){
+  
+  for (col in names(df)) {
+    
+    if (types[,col] == "string"){
+      df[,col] <- as.character(df[,col])
+    }
+    
+    else if (types[,col] == "numeric") {
+      df[,col] <- as.character(df[,col])
+      df[,col] <- as.numeric(df[,col])
+    }
+    
+    else if (types[,col] == "integer") {
+      df[,col] <- as.character(df[,col])
+      df[,col] <- as.integer(df[,col])
+    }
+  }
+  return(df)
+}
+
+
+### Remove MV and inconsistencies
+
+function.removeMVandConsistency <- function(df,ranges){
+  
+  rowRemove <- 0
+  
+  for (ligne in row.names(df)){
+    
+    for (col in names(df)) {
+      val <- df[ligne,col]
+      
+      if (class(val) == "numeric" || class(val) == "integer") {
+        
+        if (is.na(val)){
+          rowRemove[ligne] <- ligne
+          break
+        }
+        else if (val < ranges[1,col] || val > ranges[2,col]) {
+          rowRemove[ligne] <- ligne
+          break
+        }
+      }
+      
+      else if (class(val) == "string") {
+        
+        if (val %in% ranges[,col] && val != ""){}
+        else {
+          rowRemove[ligne] <- ligne
+          break
+        }
+      }
+    }
+  }
+  
+  return(rowRemove[-1])
+}
 

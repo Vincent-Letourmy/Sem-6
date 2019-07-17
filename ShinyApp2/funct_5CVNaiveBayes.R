@@ -59,11 +59,26 @@ function.CVNaiveBayes <- function(df,col,tabCosts,fold){
 function.tabNaiveBayes <- function(df, colName){
   Naive_Bayes_Model=e1071::naiveBayes(df[,colName] ~., data = df)
   NB_Predictions=predict(Naive_Bayes_Model,df)
+  
   tab <- data.frame(table(NB_Predictions,df[,colName]))
+  tab <- data.frame(Prediction = tab[,1], Reality = tab[,2])
   cost <- 0
-  return( data.frame(as.data.frame(tab)[,-3],cost) )
+
+  return( data.frame(as.data.frame(tab),Cost = cost) )
   
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Autre méthode : library(mlr)

@@ -3,6 +3,9 @@ function_reactiveValues <- function() {
     
                  dataframe_initialisation = NULL,
                  dataframe_initialisationBis = NULL,
+                 
+                 matrixBool = NULL,
+                 matrixBoolInit = NULL,
 
                  dataframe_targetconfig = NULL,
                  
@@ -38,9 +41,14 @@ function_reactiveValues <- function() {
                  resultDataSaved = NULL,
                  
                  # Fixed df
+                 fixingCost = NULL,
                  accuracyFixed = NULL,
                  accuracyTabFixed = NULL,
-                 resultDataFixed = NULL
+                 resultDataFixed = NULL,
+                 
+                 tabDetailsCostsInit = NULL,
+                 tabDetailsCostsDQ = NULL,
+                 tabDetailsCostsFixed = NULL
                  
   )
 }
