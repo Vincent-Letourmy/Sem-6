@@ -1,7 +1,7 @@
 
-#--- Missing Values Bar Chart -----------------------------------------------------------------------------------------#
+#--- Inconsistencies Bar Chart -----------------------------------------------------------------------------------------#
 
-### Remove columns with too many missing values
+### Remove columns with too many inconsistencies
 
 function.removeColumns <- function(resNas, df, pourcent, columnSelected){
   
@@ -23,25 +23,7 @@ function.removeColumns <- function(resNas, df, pourcent, columnSelected){
 }
 
 
-### Bar chart Missing values
-
-function.barChartMissingValues <- function(df){
-  res <- 0
-  for (i in names(df)) {
-    col <- df[,i]
-    
-    a <- 0
-    for (j in col) {
-      if(is.na(j) || j == "" || j == "?") a = a + 1
-    }
-    res[i] = round(a / length(col) * 100,digits = 2)
-  }
-  res <- res[-1]
-  return(res)
-}
-
-
-### Bar chart inconsistency
+### Data for bar chart inconsistency
 
 function.barChartInconsistency <- function(matrixBool){
   res <- 0
@@ -85,6 +67,8 @@ function.matrixBooleanConsistency <- function(df,types,ranges){
       
       val <- df[ligne,col]
       
+      # TEST NUMERIC/INTEGER
+      
       if (typ == "numeric" || typ == "integer") {
         if (! is.na(val)){
           if (val < rangMin || val > rangMax) {
@@ -93,6 +77,10 @@ function.matrixBooleanConsistency <- function(df,types,ranges){
         }
         else a[ligne,col] <- 1
       }
+      ###
+      
+      # TEST STRING
+      
       else if (typ == "string") {
         if (! is.na(val)){
           if (val %in% rang && val != ""){}
@@ -100,6 +88,7 @@ function.matrixBooleanConsistency <- function(df,types,ranges){
         }
         else a[ligne,col] <- 1
       }
+      ###
     }
   }
   return(a)
@@ -124,88 +113,13 @@ function.nbInconsistenciesValues <- function(matrixBool){
 }
 
 
-#--- Types and Ranges ------------------------------------------------------------------------------------------------------#
-
-
-### Types
-
-function.fileInputTypes <- function(){
-  fileInput("fileCSVTypes", "CSV File Types",
-            multiple = FALSE,
-            accept = c("text/csv",
-                       "text/comma-separated-values,text/plain",
-                       ".csv"))
-}
 
 
 
-function_parametersBoxTypes <- function(){
-  
-  renderUI({
-    box(width = 12,
-        title = "Parameters Types (CSV)",
-        status = "primary",
-        solidHeader = TRUE,
-        collapsible = TRUE,
-        collapsed = TRUE,
-        column(6,
-               checkboxInput("headerTypes", "Header", TRUE),
-               radioButtons("sepTypes", "Separator",
-                            choices = c("Comma" = ",",
-                                        "Semicolon" = ';',
-                                        "Tab" = "\t"),
-                            selected = ';')
-        ),
-        column(6,
-               radioButtons("quoteTypes", "Quote",
-                            choices = c(None = "",
-                                        "Double Quote" = '"',
-                                        "Single Quote" = "'"),
-                            selected = "")
-        )
-    )
-  })
-  
-}
-
-
-### Ranges
-
-function.fileInputRanges <- function(){
-  fileInput("fileCSVRanges", "CSV File Ranges",
-            multiple = FALSE,
-            accept = c("text/csv",
-                       "text/comma-separated-values,text/plain",
-                       ".csv"))
-}
 
 
 
-function_parametersBoxRanges <- function(){
-  
-  renderUI({
-    box(width = 12,
-        title = "Parameters Ranges (CSV)",
-        status = "primary",
-        solidHeader = TRUE,
-        collapsible = TRUE,
-        collapsed = TRUE,
-        column(6,
-               checkboxInput("headerRanges", "Header", TRUE),
-               radioButtons("sepRanges", "Separator",
-                            choices = c("Comma" = ",",
-                                        "Semicolon" = ';',
-                                        "Tab" = "\t"),
-                            selected = ';')
-        ),
-        column(6,
-               radioButtons("quoteRanges", "Quote",
-                            choices = c(None = "",
-                                        "Double Quote" = '"',
-                                        "Single Quote" = "'"),
-                            selected = "")
-        )
-    )
-  })
-  
-}
+
+
+
+

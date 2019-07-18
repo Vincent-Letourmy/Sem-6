@@ -1,4 +1,6 @@
 
+# Result of accuracy with confidence interval
+
 function.accuracyBoxWithConfInterval <- function(accuracyTab, accuracy){
   
   res <- accuracyTab
@@ -17,6 +19,9 @@ function.accuracyBoxWithConfInterval <- function(accuracyTab, accuracy){
   
 }
 
+
+# Bar chart CV accuracy
+
 function.accuracyCVBarChart <- function(accuracyTab, accuracy , fold){
   
   if (!is.null(accuracy)) {
@@ -29,6 +34,9 @@ function.accuracyCVBarChart <- function(accuracyTab, accuracy , fold){
   }
   
 }
+
+
+# Bar chart box
 
 function.BarChartBox <- function(accuracy,accCVBar){
   if (!is.null(accuracy)) {
@@ -45,7 +53,10 @@ function.BarChartBox <- function(accuracy,accCVBar){
   }
 }
 
-function.costsResultsVaue <- function(resultData){
+
+# Result of cost
+
+function.costsResultsValue <- function(resultData){
   result <- round(resultData, digits = 0)
   valueBox(
     value = paste("Cost : ",result)
@@ -55,15 +66,7 @@ function.costsResultsVaue <- function(resultData){
 }
 
 
-function.costsResultsVaueFixed <- function(resultData, fixingCost){
-  result <- round(resultData + fixingCost, digits = 0)
-  valueBox(
-    value = paste("Cost : ",result)
-    ,paste('Cost of prediction fail :',round(resultData,digits = 2), " + cost of fixing :", round(fixingCost,digits = 2))
-    ,icon = icon("menu-hamburger",lib='glyphicon')
-    ,color = "green")
-}
-
+# Tab details costs
 
 function.tabCostsTotal <- function(resultats, costs, div){
   nouv <- 0
@@ -74,16 +77,20 @@ function.tabCostsTotal <- function(resultats, costs, div){
 }
 
 
+# Details box
 
-function.nbMissingValues <- function(df){
-  comp <- 0
-  for (i in df){
-    for (j in i){
-      if (j == "" || is.na(j)) comp = comp + 1
-    }
-  }
-  return(comp)
+function.detailsBox <- function(tabDetail){
+  renderUI({
+    box( 
+      title = "Details of costs"
+      ,status = "primary"
+      ,solidHeader = TRUE 
+      ,tableOutput(tabDetail)
+    )
+  })
 }
+
+
 
 
 

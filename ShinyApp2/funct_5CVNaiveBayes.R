@@ -1,4 +1,6 @@
 
+# Each column as factor
+
 function.as_factor <- function(df){
   for (i in names(df)) {
     df[,i] <- as.factor(df[,i])
@@ -12,29 +14,30 @@ function.as_factor <- function(df){
 
 function.CVNaiveBayes <- function(df,col,tabCosts,fold){
   
-  
   moy <- 0
   cost <- 0
   restab <- data.frame(tabCosts[,-3],cost)
   
   for (i in 1:fold) {
     
+    # Train and test partition
     training.samples <- df[,col] %>% 
       caret::createDataPartition(p = 0.8, list = FALSE)
     train.data <- df[training.samples, ]
     test.data <- df[-training.samples, ]
     
+    # Naive Bayes prediction
     Naive_Bayes_Model=naiveBayes(train.data[,col] ~., data = train.data)
     NB_Predictions=predict(Naive_Bayes_Model,test.data[,!names(test.data)%in%col])
     res <- data.frame(table(NB_Predictions,test.data[,col]))
 
     
-    # Création du tableau de fréquences
+    # Create frequences tab
     for (row in row.names(restab)) {
-      restab[row,"cost"] = restab[row,"cost"] + res[row,"Freq"] 
+      restab[row,"cost"] = ( restab[row,"cost"] + res[row,"Freq"] ) / fold
     }
     
-    #Création moyenne
+    # Create mean
     aux <- 0
     for(j in row.names(res)){
       if (as.integer(res[j,c("NB_Predictions")]) == as.integer(res[j,c("Var2")])) {
@@ -47,14 +50,17 @@ function.CVNaiveBayes <- function(df,col,tabCosts,fold){
   }
   
   # Tableau de fréquences 
-  for (row in row.names(restab)) {
-    restab[row,"cost"] = restab[row,"cost"] / fold
-  }
+  #for (row in row.names(restab)) {
+  #  restab[row,"cost"] = restab[row,"cost"] / fold
+  #}
+  
   resultats <- list("restab" = restab, "moy" = moy)
   return(resultats)
   
 }
 
+
+# Costs tab from NB
 
 function.tabNaiveBayes <- function(df, colName){
   Naive_Bayes_Model=e1071::naiveBayes(df[,colName] ~., data = df)

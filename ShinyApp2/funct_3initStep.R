@@ -1,7 +1,12 @@
 source("funct_5CVNaiveBayes.R")
 
-function.fileInput <- function(){
-  fileInput("fileCSV", "CSV File",
+#----------------------------------------------------------------------------------------- INITIALISATION
+
+
+# Upload Files CSV
+
+function.fileInput <- function(fileCSV){
+  fileInput(fileCSV, "CSV File",
             multiple = FALSE,
             accept = c("text/csv",
                        "text/comma-separated-values,text/plain",
@@ -16,6 +21,43 @@ function.loadFile <- function(file, header, sep, quote){
   return(df)
 }
 
+
+# Parameters box
+
+function_parametersBox <- function(header,sep,quote,collapsed){
+  
+  renderUI({
+    box(width = 12,
+        title = "Parameters (CSV)",
+        status = "primary",
+        solidHeader = TRUE,
+        collapsible = TRUE,
+        collapsed = collapsed,
+        column(6,
+               checkboxInput(header, "Header", TRUE),
+               radioButtons(sep, "Separator",
+                            choices = c("Comma" = ",",
+                                        "Semicolon" = ';',
+                                        "Tab" = "\t"),
+                            selected = ';')
+        ),
+        column(6,
+               radioButtons(quote, "Quote",
+                            choices = c(None = "",
+                                        "Double Quote" = '"',
+                                        "Single Quote" = "'"),
+                            selected = '"')
+        )
+    )
+  })
+  
+}
+
+
+#----------------------------------------------------------------------------------------- TARGET
+
+# Selection column
+
 function.selectionColumn <- function(df){
   if (is.null(df)) {
     return (h4("Please upload a file and then select a column"))
@@ -25,51 +67,9 @@ function.selectionColumn <- function(df){
   selectInput("selectcolumn", "Choose a column (try with \"Smokes\")",items)
 }
 
-function_parametersBox <- function(){
-  
-  renderUI({
-    box(width = 12,
-        title = "Parameters (CSV)",
-        status = "primary",
-        solidHeader = TRUE,
-        column(6,
-               checkboxInput("header", "Header", TRUE),
-               radioButtons("sep", "Separator",
-                            choices = c("Comma" = ",",
-                                        "Semicolon" = ';',
-                                        "Tab" = "\t"),
-                            selected = ',')
-        ),
-        column(6,
-               radioButtons("quote", "Quote",
-                            choices = c(None = "",
-                                        "Double Quote" = '"',
-                                        "Single Quote" = "'"),
-                            selected = "")
-        )
-    )
-  })
-  
-}
 
-function.matrixBoolean <- function(df){
-  n1 <- nrow(df)
-  n2 <- ncol(df)
-  a <- matrix (rep(0, n1*n2), n1, n2)
-  a <- data.frame(a)
-  names(a) <- names(df)
-  
-  for (col in names(df)) {
-    ligne <- 1
-    for (val in df[,col]) {
-      if (is.na(val) || val == "" || val == "?"){
-        a[ligne,col] <- 1
-      }
-      ligne <- ligne + 1
-    }
-  }
-  return(a)
-}
+
+
 
 
 

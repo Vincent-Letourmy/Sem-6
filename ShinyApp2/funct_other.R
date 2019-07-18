@@ -1,21 +1,4 @@
 
-function.downloadFile <- function(tabCosts) {
-  downloadHandler(
-    
-    filename = function() {
-      paste("MydataDownload", "csv", sep = ".")
-    },
-    
-    content = function(file) {
-      write.table(tabCosts, file, sep = ",",
-                  row.names = FALSE)
-    }
-  )
-}
-
-
-
-
 function.nbMV <- function(df){
   comp <- 0
   for (col in df) {
@@ -26,6 +9,15 @@ function.nbMV <- function(df){
   return(comp)
 }
 
+function.nbMissingValues <- function(df){
+  comp <- 0
+  for (i in df){
+    for (j in i){
+      if (j == "" || is.na(j)) comp = comp + 1
+    }
+  }
+  return(comp)
+}
 
 function.nbRowInconsistency <- function(df){
   comp <- 0
@@ -36,63 +28,42 @@ function.nbRowInconsistency <- function(df){
 }
 
 
-### Uplaod file fixing
-
-function.fileInputFixing <- function(){
-  fileInput("fileCSVFixing", "CSV File",
-            multiple = FALSE,
-            accept = c("text/csv",
-                       "text/comma-separated-values,text/plain",
-                       ".csv"))
-}
-
-
-### Parameters box fixing
-
-function_parametersBoxFixing <- function(){
+function.matrixBoolean <- function(df){
+  n1 <- nrow(df)
+  n2 <- ncol(df)
+  a <- matrix (rep(0, n1*n2), n1, n2)
+  a <- data.frame(a)
+  names(a) <- names(df)
   
-  renderUI({
-    box(width = 12,
-        title = "Parameters (CSV)",
-        status = "primary",
-        solidHeader = TRUE,
-        column(6,
-               checkboxInput("headerFixing", "Header", TRUE),
-               radioButtons("sepFixing", "Separator",
-                            choices = c("Comma" = ",",
-                                        "Semicolon" = ';',
-                                        "Tab" = "\t"),
-                            selected = ',')
-        ),
-        column(6,
-               radioButtons("quoteFixing", "Quote",
-                            choices = c(None = "",
-                                        "Double Quote" = '"',
-                                        "Single Quote" = "'"),
-                            selected = "")
-        )
-    )
-  })
-  
-}
-
-### Download after DQ config
-
-function.downloadFileDQconfig <- function(df) {
-  downloadHandler(
-    
-    filename = function() {
-      paste("MydataDQconfig", "csv", sep = ".")
-    },
-    
-    content = function(file) {
-      write.table(df, file, sep = ",",
-                  row.names = FALSE)
+  for (col in names(df)) {
+    ligne <- 1
+    for (val in df[,col]) {
+      if (is.na(val) || val == "" || val == "?"){
+        a[ligne,col] <- 1
+      }
+      ligne <- ligne + 1
     }
-  )
+  }
+  return(a)
 }
 
 
+### Bar chart Missing values
+
+function.barChartMissingValues <- function(df){
+  res <- 0
+  for (i in names(df)) {
+    col <- df[,i]
+    
+    a <- 0
+    for (j in col) {
+      if(is.na(j) || j == "" || j == "?") a = a + 1
+    }
+    res[i] = round(a / length(col) * 100,digits = 2)
+  }
+  res <- res[-1]
+  return(res)
+}
 
 
 
