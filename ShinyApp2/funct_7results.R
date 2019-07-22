@@ -1,21 +1,21 @@
 
-# Result of accuracy with confidence interval
+# Result of accuracy, sens or spe with confidence interval
 
-function.accuracyBoxWithConfInterval <- function(accuracyTab, accuracy){
+function.statBoxWithConfInterval <- function(tab, stat, name, iconName, colorName){
   
-  res <- accuracyTab
+  res <- tab
   mean <- mean(res)
   error <- qt(0.975,df=length(res)-1)*sd(res)/sqrt(length(res))
   
   left <- mean - error
   right <- mean + error
   
-  accuracy <- round(accuracy, digits = 2)
+  stat <- round(stat, digits = 2)
   valueBox(
-    value = paste("Accuracy : ",accuracy,"%")
+    value = paste(name," : ",stat,"%")
     ,paste('Confidence Interval :',round(left,digits = 1),"%  /  ",round(right,digits = 1),"%")
-    ,icon = icon("stats",lib='glyphicon')
-    ,color = "purple")
+    ,icon = icon(iconName,lib='glyphicon')
+    ,color = colorName)
   
 }
 

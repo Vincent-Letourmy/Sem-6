@@ -190,7 +190,7 @@ function.body <- function(){
                 value = "removecolumnsMV",
                 tags$br(),
                 box(width = 12,
-                    h4("Do you want to remove columns with too many missing values ?"),
+                    h4("Do you want to remove columns with too many missing or inconsistencing values ?"),
                     uiOutput("pourcentageSelection"),
                     uiOutput("removecolumnbutton")
                 ),
@@ -283,6 +283,8 @@ function.body <- function(){
                    h1("Results - Initial"),
                    tags$hr(),
                    uiOutput("accuracyvalueSaved"),
+                   uiOutput("sensitivityvalueSaved"),
+                   uiOutput("specificityvalueSaved"),
                    
                    tags$hr(),
                    uiOutput("costResultsValueSaved"),
@@ -312,6 +314,8 @@ function.body <- function(){
                    h1("Results - According Data Quality Config"),
                    tags$hr(),
                    uiOutput("accuracyvalue"),
+                   uiOutput("sensitivityvalue"),
+                   uiOutput("specificityvalue"),
                   
                    tags$hr(),
                    uiOutput("costresultsvalue"),
@@ -407,6 +411,8 @@ function.body <- function(){
                  h1("Results - Fixed data"),
                  tags$hr(),
                  uiOutput("accuracyvalueFixed"),
+                 uiOutput("sensitivityvalueFixed"),
+                 uiOutput("specificityvalueFixed"),
                  
                  tags$hr(),
                  uiOutput("costResultsValueFixed"),

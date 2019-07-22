@@ -1,4 +1,9 @@
 
+library(e1071)
+library(caret) 
+library(dplyr)
+
+
 # Each column as factor
 
 function.as_factor <- function(df){
@@ -9,14 +14,14 @@ function.as_factor <- function(df){
 }
 
 
-# library(e1071)
-
-
-function.CVNaiveBayes <- function(df,col,tabCosts,fold){
+function.CVNaiveBayes <- function(df,col,tabCosts,fold,ranges){
   
-  moy <- 0
+  resultats <- list()
   cost <- 0
-  restab <- data.frame(tabCosts[,-3],cost)
+  resultats$restab <- data.frame(tabCosts[,-3],cost)
+  
+  rangesFirst <- ranges[,col][1] # ATTENTION, le premier élément dans ranges pour les booléens doit être FALSE, 0, non ... La négation
+  
   
   for (i in 1:fold) {
     
@@ -25,36 +30,45 @@ function.CVNaiveBayes <- function(df,col,tabCosts,fold){
       caret::createDataPartition(p = 0.8, list = FALSE)
     train.data <- df[training.samples, ]
     test.data <- df[-training.samples, ]
+    Reality <- test.data[,col]
     
     # Naive Bayes prediction
     Naive_Bayes_Model=naiveBayes(train.data[,col] ~., data = train.data)
     NB_Predictions=predict(Naive_Bayes_Model,test.data[,!names(test.data)%in%col])
-    res <- data.frame(table(NB_Predictions,test.data[,col]))
-
+    res <- data.frame(table(NB_Predictions,Reality))
+    
+    if (nrow(tabCosts) == 4){
+      stat <- funct.eval_metrics_binomial(res$Freq)
+      
+      resultats$sensitivity[i] <- stat$sensitivity*100
+      resultats$specificity[i] <- stat$specificity*100
+      resultats$moy[i] <- stat$accuracy*100
+      
+    }
+    else{
+      # Create mean
+      aux <- 0
+      for(j in row.names(res)){
+        if (as.integer(res[j,c("NB_Predictions")]) == as.integer(res[j,c("Reality")])) {
+          aux[j] = res[j,c("Freq")]
+        }
+      }
+      aux <- as.data.frame(aux)
+      resultats$moy[i]<- sum(aux)/sum(res$Freq)*100
+    }
     
     # Create frequences tab
-    for (row in row.names(restab)) {
-      restab[row,"cost"] = ( restab[row,"cost"] + res[row,"Freq"] ) / fold
+    for (row in row.names(tabCosts)) {
+      resultats$restab[row,"cost"] <- ( resultats$restab[row,"cost"] + res[row,"Freq"] ) 
     }
-    
-    # Create mean
-    aux <- 0
-    for(j in row.names(res)){
-      if (as.integer(res[j,c("NB_Predictions")]) == as.integer(res[j,c("Var2")])) {
-        aux[j] = res[j,c("Freq")]
-      }
-    }
-    aux <- as.data.frame(aux)
-    moy[i]<- sum(aux)/sum(res$Freq)*100
     
   }
   
-  # Tableau de fréquences 
-  #for (row in row.names(restab)) {
-  #  restab[row,"cost"] = restab[row,"cost"] / fold
-  #}
+  # Frequences tab retraité en fonction du fold
+  for (row in row.names(tabCosts)) {
+    resultats$restab[row,"cost"] <- resultats$restab[row,"cost"] / fold
+  }
   
-  resultats <- list("restab" = restab, "moy" = moy)
   return(resultats)
   
 }
@@ -65,9 +79,10 @@ function.CVNaiveBayes <- function(df,col,tabCosts,fold){
 function.tabNaiveBayes <- function(df, colName){
   Naive_Bayes_Model=e1071::naiveBayes(df[,colName] ~., data = df)
   NB_Predictions=predict(Naive_Bayes_Model,df)
-  
+
   tab <- data.frame(table(NB_Predictions,df[,colName]))
   tab <- data.frame(Prediction = tab[,1], Reality = tab[,2])
+
   cost <- 0
 
   return( data.frame(as.data.frame(tab),Cost = cost) )
@@ -75,92 +90,19 @@ function.tabNaiveBayes <- function(df, colName){
 }
 
 
+# Sensitivity and specificity due to 
 
+library(pROC)
 
-
-
-
-
-
-
-
-
-
-
-# Autre méthode : library(mlr)
-
-
-function.CVNaiveBayesBis <- function(df,col,tabCosts,fold){
+funct.eval_metrics_binomial <- function(vect) {
   
-  colNA <- is.na(df[,col])
-  df_noNAs <<- df[!colNA,]
+  results <- list()
+  results$accuracy = ( vect[1] + vect[4] ) / sum(vect)
+  results$sensitivity = vect[4] / ( vect[4] + vect[3] )
+  results$specificity = vect[1] / ( vect[1] + vect[2] )
   
-  moy <- 0
-  cost <- 0
-  restab <- data.frame(tabCosts[,-3],cost)
-  
-  for (i in 1:fold) {
-    
-    training.samples <- df_noNAs[,col] %>% 
-      caret::createDataPartition(p = 0.8, list = FALSE)
-    train.data <- df_noNAs[training.samples, ]
-    test.data <- df_noNAs[-training.samples, ]
-    
-    task <<- makeClassifTask(data = train.data, target = col)
-    selected_model <<- makeLearner("classif.naiveBayes")
-    
-    NB_mlr <<- mlr::train(selected_model, task)
-    
-    predictions_mlr <<- as.data.frame(predict(NB_mlr, newdata = test.data[,!names(df_noNAs) %in% c(col)]))
-    resultNaiveBayes <<- table(predictions_mlr[,1],test.data[,col])
-    res <- as.data.frame(resultNaiveBayes)
-    
-    
-    # Création du tableau de fréquences
-    for (row in row.names(restab)) {
-      restab[row,"cost"] = restab[row,"cost"] + res[row,"Freq"] 
-    }
-    
-    #Création moyenne
-    aux <- 0
-    for(j in row.names(res)){
-      if (as.integer(res[j,c("Var1")]) == as.integer(res[j,c("Var2")])) {
-        aux[j] = res[j,c("Freq")]
-      }
-    }
-    aux <- as.data.frame(aux)
-    moy[i]<- sum(aux)/sum(res$Freq)*100
-    
-  }
-  
-  # Tableau de fréquences 
-  for (row in row.names(restab)) {
-    restab[row,"cost"] = restab[row,"cost"] / fold
-  }
-  resultats <- list("restab" = restab, "moy" = moy)
-  return(resultats)
-  
+  results
 }
-
-function.tabNaiveBayesBis <- function(df, colName){
-  
-  col <- df[,c(colName)]
-  colNA <- is.na(col)
-  df <- df[!colNA,]
-  
-  task = makeClassifTask(data = df, target = colName)
-  selected_model = makeLearner("classif.naiveBayes")
-  NB_mlr = mlr::train(selected_model, task)
-  
-  NB_mlr$learner.model
-  predictions_mlr = as.data.frame(predict(NB_mlr, newdata = df[,!names(df) %in% c(colName)]))
-  tab <- table(predictions_mlr[,1],df[,c(colName)])
-  cost <- 0
-  
-  return( data.frame(as.data.frame(tab)[,-3],cost) )
-  
-}
-
 
 
 

@@ -31,19 +31,41 @@ function_reactiveValues <- function() {
                  
                  # Results
                  resultData = NULL, 
+                 
                  accuracy = NULL, 
                  accuracyTab = NULL,
+                 
+                 sensitivity = NULL,
+                 sensitivityTab = NULL,
+                 
+                 specificity = NULL,
+                 specificityTab = NULL,
+                 
                  resMissingValuesBarChart = NULL,
                  
                  # Initialisation df to compare
                  accuracySaved = NULL,
                  accuracyTabSaved = NULL,
+                 
+                 sensitivitySaved = NULL,
+                 sensitivityTabSaved = NULL,
+                 
+                 specificitySaved = NULL,
+                 specificityTabSaved = NULL,
+                 
                  resultDataSaved = NULL,
                  
                  # Fixed df
                  fixingCost = NULL,
                  accuracyFixed = NULL,
                  accuracyTabFixed = NULL,
+                 
+                 sensitivityFixed = NULL,
+                 sensitivityTabFixed = NULL,
+                 
+                 specificityFixed = NULL,
+                 specificityTabFixed = NULL,
+                 
                  resultDataFixed = NULL,
                  
                  tabDetailsCostsInit = NULL,
